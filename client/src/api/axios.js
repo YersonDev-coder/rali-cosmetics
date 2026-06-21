@@ -8,7 +8,8 @@ const api = axios.create({
 api.interceptors.response.use(
   (res) => res,
   (error) => {
-    if (error.response?.status === 401) {
+    const isAuthCheck = error.config?.url?.includes('/auth/me');
+    if (error.response?.status === 401 && !isAuthCheck) {
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
