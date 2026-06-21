@@ -27,7 +27,11 @@ export default function ProductDetail() {
       setProduct(prod.data);
       setRelated(rel.data);
       setQty(1);
-      setVarianteSeleccionada(null);
+      if (prod.data.tiene_variantes && prod.data.variantes?.length > 0) {
+        setVarianteSeleccionada(prod.data.variantes.find(v => v.stock > 0) ?? null);
+      } else {
+        setVarianteSeleccionada(null);
+      }
     }).finally(() => setLoading(false));
   }, [id]);
 

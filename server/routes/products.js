@@ -3,6 +3,19 @@ const pool = require('../db');
 
 const router = express.Router();
 
+// Para productos con variantes, reemplaza su stock=0 por la suma real de sus variantes
+async function enrichWithVarianteStock(rows) {
+  const ids = rows.filter(p => p.tiene_variantes).map(p => p.id);
+  if (ids.length === 0) return rows;
+  const { rows: stocks } = await pool.query(
+    `SELECT producto_id, COALESCE(SUM(stock), 0)::int AS total_stock
+     FROM producto_variantes WHERE producto_id = ANY($1::int[]) GROUP BY producto_id`,
+    [ids]
+  );
+  const stockMap = Object.fromEntries(stocks.map(r => [r.producto_id, r.total_stock]));
+  return rows.map(p => p.tiene_variantes ? { ...p, stock: stockMap[p.id] ?? 0 } : p);
+}
+
 router.get('/suggestions', async (req, res) => {
   const { q } = req.query;
   if (!q || q.trim().length < 2) return res.json([]);
@@ -64,7 +77,14 @@ router.get('/', async (req, res) => {
   }
   if (min_price) { where.push(`p.precio >= $${i++}`); params.push(min_price); }
   if (max_price) { where.push(`p.precio <= $${i++}`); params.push(max_price); }
-  if (disponible === 'true') { where.push('p.stock > 0'); }
+  if (disponible === 'true') {
+    where.push(`(
+      (p.tiene_variantes = FALSE AND p.stock > 0) OR
+      (p.tiene_variantes = TRUE AND EXISTS (
+        SELECT 1 FROM producto_variantes pv WHERE pv.producto_id = p.id AND pv.stock > 0
+      ))
+    )`);
+  }
 
   const orderMap = {
     precio_asc: 'p.precio ASC',
@@ -100,7 +120,8 @@ router.get('/', async (req, res) => {
       [...params, limit, offset]
     );
 
-    res.json({ products: rows, total, page: parseInt(page), pages: Math.ceil(total / limit) });
+    const products = await enrichWithVarianteStock(rows);
+    res.json({ products, total, page: parseInt(page), pages: Math.ceil(total / limit) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -118,7 +139,7 @@ router.get('/bestsellers', async (req, res) => {
       GROUP BY p.id, c.nombre
       ORDER BY ventas DESC LIMIT 8
     `);
-    res.json(rows);
+    res.json(await enrichWithVarianteStock(rows));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -131,7 +152,7 @@ router.get('/new', async (req, res) => {
        LEFT JOIN categorias c ON p.categoria_id=c.id
        WHERE p.activo=TRUE ORDER BY p.created_at DESC LIMIT 8`
     );
-    res.json(rows);
+    res.json(await enrichWithVarianteStock(rows));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -170,7 +191,7 @@ router.get('/:id/related', async (req, res) => {
        WHERE p.categoria_id=$1 AND p.id!=$2 AND p.activo=TRUE LIMIT 4`,
       [prod.rows[0].categoria_id, req.params.id]
     );
-    res.json(rows);
+    res.json(await enrichWithVarianteStock(rows));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
