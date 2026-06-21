@@ -37,10 +37,14 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4 text-lg">Información</h4>
             <ul className="space-y-2 text-sm text-primary-100">
-              <li>📍 Jr. Huallayco 123, Huánuco, Perú</li>
+              <li>📍 Ubinas Mz. G1 Lt. 17, Amarilis 10003, Perú</li>
               <li>📞 <a href="tel:+51983573536" className="hover:text-white">+51 983 573 536</a></li>
               <li>✉️ contacto@ralicosmetics.com</li>
-              <li className="pt-2">Lun–Sáb: 9:00 – 19:00</li>
+              <li className="pt-2 space-y-0.5">
+                <p>Lun – Vie: 3:00 p.m. – 8:00 p.m.</p>
+                <p>Sábados: 3:00 p.m. – 7:00 p.m.</p>
+                <p>Domingos: Cerrado</p>
+              </li>
             </ul>
           </div>
         </div>
