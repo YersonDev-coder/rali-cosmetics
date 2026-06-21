@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Clock } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
@@ -180,9 +181,16 @@ export default function Checkout() {
                 <div className="space-y-3 pt-2">
                   <div className="bg-primary-light rounded-xl p-4 text-sm text-text-dark">
                     <p className="font-semibold text-base mb-1">📍 Dirección de la tienda</p>
-                    <p className="mb-2">{TIENDA_DIRECCION}</p>
-                    <p className="text-gray-500 mb-3">Horario: Lun–Sáb 9:00–19:00</p>
-                    <a
+                    <p className="mb-3">{TIENDA_DIRECCION}</p>
+                    <div className="flex items-start gap-2 mb-3">
+                      <Clock size={15} className="text-primary mt-0.5 flex-shrink-0" />
+                      <ul className="text-gray-600 space-y-0.5 text-xs leading-relaxed">
+                        <li><span className="font-medium text-text-dark">Lun – Vie:</span> 3:00 p.m. – 8:00 p.m.</li>
+                        <li><span className="font-medium text-text-dark">Sábados:</span> 3:00 p.m. – 7:00 p.m.</li>
+                        <li><span className="font-medium text-text-dark">Domingos:</span> Cerrado</li>
+                      </ul>
+                    </div>
+                    <
                       href={`https://maps.google.com/?q=${TIENDA_MAPS_Q}`}
                       target="_blank"
                       rel="noopener noreferrer"

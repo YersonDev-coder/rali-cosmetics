@@ -3,7 +3,10 @@ const { z } = require('zod');
 const registerSchema = z.object({
   nombre:    z.string({ required_error: 'El nombre es requerido' }).min(2, 'El nombre debe tener al menos 2 caracteres').max(100),
   email:     z.string({ required_error: 'El email es requerido' }).email('Email inválido'),
-  password:  z.string({ required_error: 'La contraseña es requerida' }).min(8, 'La contraseña debe tener al menos 8 caracteres'),
+  password:  z.string({ required_error: 'La contraseña es requerida' })
+               .min(8, 'La contraseña debe tener al menos 8 caracteres')
+               .regex(/[A-Z]/, 'La contraseña debe tener al menos una mayúscula')
+               .regex(/[*&%$#!?@.,-]/, 'La contraseña debe tener al menos un carácter especial (*&%$#!?@.,-)'),
   telefono:  z.string().max(15).optional().nullable(),
   direccion: z.string().max(200).optional().nullable(),
 });

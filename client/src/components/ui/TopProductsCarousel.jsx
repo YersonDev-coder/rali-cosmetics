@@ -216,7 +216,7 @@ export default function TopProductsCarousel() {
         <span
           style={{
             fontFamily: 'Anton, sans-serif',
-            fontSize: 'clamp(90px, 28vw, 380px)',
+            fontSize: 'clamp(80px, 24vw, 340px)',
             fontWeight: 900,
             color: 'white',
             opacity: 0.18,

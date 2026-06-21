@@ -9,6 +9,12 @@ export default function RegisterPage() {
   const [form, setForm] = useState({ nombre: '', email: '', password: '', telefono: '', direccion: '' });
   const [loading, setLoading] = useState(false);
 
+  const pwdRules = [
+    { label: 'Mínimo 8 caracteres',                    ok: form.password.length >= 8 },
+    { label: 'Al menos una mayúscula',                  ok: /[A-Z]/.test(form.password) },
+    { label: 'Al menos un carácter especial (*&%$#!?@.,-)', ok: /[*&%$#!?@.,-]/.test(form.password) },
+  ];
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -50,7 +56,27 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {field('nombre', 'Nombre completo', 'text', 'Tu nombre completo')}
           {field('email', 'Email', 'email', 'tu@email.com')}
-          {field('password', 'Contraseña', 'password', '••••••••')}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña *</label>
+            <input
+              type="password"
+              required
+              value={form.password}
+              onChange={e => setForm({ ...form, password: e.target.value })}
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary text-sm"
+              placeholder="••••••••"
+            />
+            {form.password.length > 0 && (
+              <ul className="mt-2 space-y-1">
+                {pwdRules.map(r => (
+                  <li key={r.label} className={`flex items-center gap-1.5 text-xs ${r.ok ? 'text-green-600' : 'text-gray-400'}`}>
+                    <span>{r.ok ? '✓' : '○'}</span>
+                    {r.label}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
           {field('telefono', 'Teléfono', 'tel', '+51 999 999 999', false)}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Dirección (Huánuco)</label>
