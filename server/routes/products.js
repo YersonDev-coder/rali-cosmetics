@@ -146,7 +146,15 @@ router.get('/:id', async (req, res) => {
       [req.params.id]
     );
     if (!rows.length) return res.status(404).json({ error: 'Producto no encontrado' });
-    res.json(rows[0]);
+    const product = rows[0];
+    if (product.tiene_variantes) {
+      const varQ = await pool.query(
+        'SELECT id, nombre, stock FROM producto_variantes WHERE producto_id=$1 ORDER BY id',
+        [product.id]
+      );
+      product.variantes = varQ.rows;
+    }
+    res.json(product);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

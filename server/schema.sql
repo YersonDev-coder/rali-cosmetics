@@ -73,3 +73,17 @@ CREATE TABLE IF NOT EXISTS lista_deseos (
   created_at TIMESTAMP DEFAULT NOW(),
   UNIQUE(usuario_id, producto_id)
 );
+
+-- Soporte de variantes/tonos por producto
+ALTER TABLE productos ADD COLUMN IF NOT EXISTS tiene_variantes BOOLEAN DEFAULT FALSE;
+
+CREATE TABLE IF NOT EXISTS producto_variantes (
+  id SERIAL PRIMARY KEY,
+  producto_id INT REFERENCES productos(id) ON DELETE CASCADE,
+  nombre VARCHAR(100) NOT NULL,
+  stock INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE detalle_pedidos ADD COLUMN IF NOT EXISTS variante_id INT REFERENCES producto_variantes(id) ON DELETE SET NULL;
+ALTER TABLE detalle_pedidos ADD COLUMN IF NOT EXISTS variante_nombre VARCHAR(100);

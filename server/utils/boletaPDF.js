@@ -10,14 +10,19 @@ function formatearFecha(fechaStr) {
 }
 
 function generarHtml({ pedido, cliente, items }) {
-  const filas = items.map(item => `
+  const filas = items.map(item => {
+    const nombreDisplay = item.variante_nombre
+      ? `${item.nombre}<br><span style="color:#999;font-size:11px">Tono: ${item.variante_nombre}</span>`
+      : item.nombre;
+    return `
     <tr>
-      <td class="td">${item.nombre}</td>
+      <td class="td">${nombreDisplay}</td>
       <td class="td center">${item.cantidad}</td>
       <td class="td right">S/ ${parseFloat(item.precio_unitario).toFixed(2)}</td>
       <td class="td right">S/ ${(item.cantidad * parseFloat(item.precio_unitario)).toFixed(2)}</td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 
   return `<!DOCTYPE html>
 <html lang="es">

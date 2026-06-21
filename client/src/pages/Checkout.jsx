@@ -69,7 +69,12 @@ export default function Checkout() {
       formData.append('subtotal', total.toFixed(2));
       formData.append('costo_delivery', costo_delivery.toFixed(2));
       formData.append('total', totalFinal.toFixed(2));
-      formData.append('items', JSON.stringify(items.map(i => ({ id: i.id, cantidad: i.cantidad, precio: i.precio }))));
+      formData.append('items', JSON.stringify(items.map(i => ({
+        id: i.id,
+        cantidad: i.cantidad,
+        precio: i.precio,
+        ...(i.variante_id ? { variante_id: i.variante_id } : {}),
+      }))));
       if (pago.comprobante) formData.append('comprobante', pago.comprobante);
 
       const res = await api.post('/orders', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
@@ -280,11 +285,14 @@ export default function Checkout() {
           <h3 className="font-semibold text-primary-dark mb-4">Resumen</h3>
           <div className="space-y-3 mb-4">
             {items.map(item => (
-              <div key={item.id} className="flex gap-2 text-sm">
+              <div key={item.cartKey ?? item.id} className="flex gap-2 text-sm">
                 <img src={item.imagen_url || 'https://placehold.co/48x48/FCE4EC/C2185B?text=R'} alt={item.nombre}
                   className="w-12 h-12 object-cover rounded-lg flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium line-clamp-2">{item.nombre}</p>
+                  {item.variante_nombre && (
+                    <p className="text-xs text-primary">Tono: {item.variante_nombre}</p>
+                  )}
                   <p className="text-gray-500">x{item.cantidad}</p>
                 </div>
                 <p className="font-semibold whitespace-nowrap">S/ {(parseFloat(item.precio) * item.cantidad).toFixed(2)}</p>

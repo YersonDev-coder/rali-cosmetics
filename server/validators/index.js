@@ -32,8 +32,12 @@ const createOrderSchema = z.object({
     },
     z.array(
       z.object({
-        id:       z.coerce.number().int().positive('El id del producto debe ser un número positivo'),
-        cantidad: z.coerce.number().int().positive('La cantidad debe ser un entero mayor a 0'),
+        id:          z.coerce.number().int().positive('El id del producto debe ser un número positivo'),
+        cantidad:    z.coerce.number().int().positive('La cantidad debe ser un entero mayor a 0'),
+        variante_id: z.preprocess(
+          val => (val == null || val === '') ? undefined : Number(val),
+          z.number().int().positive().optional()
+        ),
       })
     ).min(1, 'El pedido debe contener al menos un producto')
   ),

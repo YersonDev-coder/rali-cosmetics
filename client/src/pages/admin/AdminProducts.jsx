@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { PencilIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import api from '../../api/axios';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import toast from 'react-hot-toast';
@@ -16,6 +16,8 @@ export default function AdminProducts() {
   const [form, setForm] = useState(EMPTY);
   const [imgFile, setImgFile] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [tieneVariantes, setTieneVariantes] = useState(false);
+  const [variantes, setVariantes] = useState([]);
 
   const load = (q = '') => {
     setLoading(true);
@@ -26,21 +28,54 @@ export default function AdminProducts() {
 
   useEffect(() => { load(); api.get('/categories').then(r => setCategories(r.data)); }, []);
 
-  const openCreate = () => { setEditing(null); setForm(EMPTY); setImgFile(null); setShowForm(true); };
-  const openEdit = (p) => {
-    setEditing(p);
-    setForm({ nombre: p.nombre, descripcion: p.descripcion || '', precio: p.precio, stock: p.stock, categoria_id: p.categoria_id || '', activo: p.activo, imagen_url: p.imagen_url || '' });
+  const openCreate = () => {
+    setEditing(null);
+    setForm(EMPTY);
     setImgFile(null);
+    setTieneVariantes(false);
+    setVariantes([]);
     setShowForm(true);
   };
 
+  const openEdit = async (p) => {
+    setEditing(p);
+    setForm({ nombre: p.nombre, descripcion: p.descripcion || '', precio: p.precio, stock: p.stock, categoria_id: p.categoria_id || '', activo: p.activo, imagen_url: p.imagen_url || '' });
+    setImgFile(null);
+    const tv = !!p.tiene_variantes;
+    setTieneVariantes(tv);
+    if (tv) {
+      try {
+        const resp = await api.get(`/products/${p.id}`);
+        setVariantes((resp.data.variantes || []).map(v => ({ nombre: v.nombre, stock: String(v.stock) })));
+      } catch {
+        setVariantes([]);
+      }
+    } else {
+      setVariantes([]);
+    }
+    setShowForm(true);
+  };
+
+  const addVariante = () => setVariantes(prev => [...prev, { nombre: '', stock: '' }]);
+  const removeVariante = (i) => setVariantes(prev => prev.filter((_, idx) => idx !== i));
+  const updateVariante = (i, field, val) => setVariantes(prev => prev.map((v, idx) => idx === i ? { ...v, [field]: val } : v));
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (tieneVariantes && variantes.filter(v => v.nombre.trim()).length === 0) {
+      toast.error('Agrega al menos un tono/color');
+      return;
+    }
     setSaving(true);
     try {
       const fd = new FormData();
-      Object.entries(form).forEach(([k, v]) => fd.append(k, v));
+      Object.entries(form).forEach(([k, v]) => {
+        if (k !== 'stock' || !tieneVariantes) fd.append(k, v);
+      });
+      if (tieneVariantes) fd.append('stock', '0');
       if (imgFile) fd.append('imagen', imgFile);
+      fd.append('variantes', JSON.stringify(tieneVariantes ? variantes.filter(v => v.nombre.trim()) : []));
+
       if (editing) {
         await api.put(`/admin/products/${editing.id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
         toast.success('Producto actualizado');
@@ -99,18 +134,22 @@ export default function AdminProducts() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {products.map(p => (
-                  <tr key={p.id} className={p.stock === 0 ? 'bg-red-50' : 'hover:bg-gray-50'}>
+                  <tr key={p.id} className={(!p.tiene_variantes && p.stock === 0) ? 'bg-red-50' : 'hover:bg-gray-50'}>
                     <td className="px-4 py-3">
                       <img src={p.imagen_url || 'https://placehold.co/48x48/FCE4EC/C2185B?text=R'}
                         alt={p.nombre} className="w-12 h-12 object-cover rounded-lg" />
                     </td>
                     <td className="px-4 py-3 text-sm font-medium max-w-xs">
                       <p className="line-clamp-2">{p.nombre}</p>
+                      {p.tiene_variantes && <span className="text-xs text-primary font-medium">Con tonos</span>}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-500">{p.categoria_nombre || '—'}</td>
                     <td className="px-4 py-3 text-sm font-semibold">S/ {parseFloat(p.precio).toFixed(2)}</td>
                     <td className="px-4 py-3 text-sm">
-                      <span className={`font-semibold ${p.stock === 0 ? 'text-red-600' : 'text-green-600'}`}>{p.stock}</span>
+                      {p.tiene_variantes
+                        ? <span className="text-primary font-medium text-xs">Variantes</span>
+                        : <span className={`font-semibold ${p.stock === 0 ? 'text-red-600' : 'text-green-600'}`}>{p.stock}</span>
+                      }
                     </td>
                     <td className="px-4 py-3">
                       <span className={`badge-estado ${p.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
@@ -156,20 +195,67 @@ export default function AdminProducts() {
                 <textarea value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })}
                   rows={3} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary resize-none" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Precio (S/) *</label>
-                  <input required type="number" step="0.01" min="0" value={form.precio}
-                    onChange={e => setForm({ ...form, precio: e.target.value })}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary" />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Precio (S/) *</label>
+                <input required type="number" step="0.01" min="0" value={form.precio}
+                  onChange={e => setForm({ ...form, precio: e.target.value })}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary" />
+              </div>
+
+              {/* Toggle variantes */}
+              <div className="flex items-center gap-2 py-1">
+                <input type="checkbox" id="tieneVariantes" checked={tieneVariantes}
+                  onChange={e => { setTieneVariantes(e.target.checked); if (!e.target.checked) setVariantes([]); }}
+                  className="accent-primary" />
+                <label htmlFor="tieneVariantes" className="text-sm font-medium text-gray-700">
+                  ¿Este producto tiene tonos/colores?
+                </label>
+              </div>
+
+              {/* Stock simple (sin variantes) */}
+              {!tieneVariantes && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Stock *</label>
                   <input required type="number" min="0" value={form.stock}
                     onChange={e => setForm({ ...form, stock: e.target.value })}
                     className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary" />
                 </div>
-              </div>
+              )}
+
+              {/* Sección variantes */}
+              {tieneVariantes && (
+                <div className="bg-primary-light rounded-xl p-4 space-y-2">
+                  <p className="text-sm font-semibold text-primary-dark mb-1">Tonos / Colores</p>
+                  {variantes.map((v, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      <input
+                        type="text"
+                        placeholder="Nombre del tono (ej: Beige claro)"
+                        value={v.nombre}
+                        onChange={e => updateVariante(i, 'nombre', e.target.value)}
+                        className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                      />
+                      <input
+                        type="number"
+                        placeholder="Stock"
+                        min="0"
+                        value={v.stock}
+                        onChange={e => updateVariante(i, 'stock', e.target.value)}
+                        className="w-20 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                      />
+                      <button type="button" onClick={() => removeVariante(i)}
+                        className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg flex-shrink-0">
+                        <XMarkIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <button type="button" onClick={addVariante}
+                    className="mt-1 text-sm text-primary font-medium hover:underline flex items-center gap-1">
+                    <PlusIcon className="w-3.5 h-3.5" /> Agregar otro tono
+                  </button>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
                 <select value={form.categoria_id} onChange={e => setForm({ ...form, categoria_id: e.target.value })}

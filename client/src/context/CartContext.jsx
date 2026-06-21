@@ -5,10 +5,15 @@ const CartContext = createContext(null);
 
 const CART_KEY = 'rali_cart';
 
+function getCartKey(item) {
+  return item.cartKey ?? `${item.id}_`;
+}
+
 export function CartProvider({ children }) {
   const [items, setItems] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem(CART_KEY)) || [];
+      const stored = JSON.parse(localStorage.getItem(CART_KEY)) || [];
+      return stored.map(i => ({ ...i, cartKey: i.cartKey ?? `${i.id}_` }));
     } catch {
       return [];
     }
@@ -19,28 +24,37 @@ export function CartProvider({ children }) {
     localStorage.setItem(CART_KEY, JSON.stringify(items));
   }, [items]);
 
-  const addItem = (product, cantidad = 1) => {
+  const addItem = (product, cantidad = 1, variante = null) => {
+    const cartKey = `${product.id}_${variante?.id ?? ''}`;
+    const maxStock = variante ? variante.stock : product.stock;
     setItems(prev => {
-      const exists = prev.find(i => i.id === product.id);
+      const exists = prev.find(i => getCartKey(i) === cartKey);
       if (exists) {
-        return prev.map(i => i.id === product.id
-          ? { ...i, cantidad: Math.min(i.cantidad + cantidad, product.stock) }
+        return prev.map(i => getCartKey(i) === cartKey
+          ? { ...i, cantidad: Math.min(i.cantidad + cantidad, maxStock) }
           : i
         );
       }
-      return [...prev, { ...product, cantidad }];
+      return [...prev, {
+        ...product,
+        cartKey,
+        variante_id: variante?.id ?? null,
+        variante_nombre: variante?.nombre ?? null,
+        stock: maxStock,
+      }];
     });
-    toast.success(`${product.nombre} agregado al carrito`);
+    const label = variante ? `${product.nombre} — ${variante.nombre}` : product.nombre;
+    toast.success(`${label} agregado al carrito`);
     setOpen(true);
   };
 
-  const removeItem = (id) => {
-    setItems(prev => prev.filter(i => i.id !== id));
+  const removeItem = (cartKey) => {
+    setItems(prev => prev.filter(i => getCartKey(i) !== cartKey));
   };
 
-  const updateQty = (id, cantidad) => {
-    if (cantidad < 1) return removeItem(id);
-    setItems(prev => prev.map(i => i.id === id ? { ...i, cantidad } : i));
+  const updateQty = (cartKey, cantidad) => {
+    if (cantidad < 1) return removeItem(cartKey);
+    setItems(prev => prev.map(i => getCartKey(i) === cartKey ? { ...i, cantidad } : i));
   };
 
   const clearCart = () => setItems([]);

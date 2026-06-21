@@ -31,18 +31,34 @@ router.post('/', authMiddleware, wrapMulter(uploadComprobante.single('comprobant
     }
   }
 
-  // FIX 1: obtener precios y stock reales desde la DB — nunca confiar en item.precio del body
-  const productIds = parsedItems.map(i => i.id);
+  // Obtener precios y stock reales desde la DB
+  const productIds = [...new Set(parsedItems.map(i => i.id))];
   const placeholders = productIds.map((_, idx) => `$${idx + 1}`).join(',');
   let productosMap;
   try {
     const { rows: prods } = await pool.query(
-      `SELECT id, precio, stock FROM productos WHERE id IN (${placeholders}) AND activo = TRUE`,
+      `SELECT id, precio, stock, tiene_variantes FROM productos WHERE id IN (${placeholders}) AND activo = TRUE`,
       productIds
     );
     productosMap = Object.fromEntries(prods.map(p => [String(p.id), p]));
   } catch (err) {
     return res.status(500).json({ error: 'Error al verificar disponibilidad de productos' });
+  }
+
+  // Obtener stocks de variantes si aplica
+  const varianteIds = parsedItems.filter(i => i.variante_id).map(i => i.variante_id);
+  let variantesMap = {};
+  if (varianteIds.length > 0) {
+    try {
+      const vPlaceholders = varianteIds.map((_, idx) => `$${idx + 1}`).join(',');
+      const { rows: vars } = await pool.query(
+        'SELECT id, producto_id, nombre, stock FROM producto_variantes WHERE id IN (' + vPlaceholders + ')',
+        varianteIds
+      );
+      variantesMap = Object.fromEntries(vars.map(v => [String(v.id), v]));
+    } catch (err) {
+      return res.status(500).json({ error: 'Error al verificar disponibilidad de variantes' });
+    }
   }
 
   for (const item of parsedItems) {
@@ -51,8 +67,21 @@ router.post('/', authMiddleware, wrapMulter(uploadComprobante.single('comprobant
     if (!producto) {
       return res.status(400).json({ error: `Producto ${item.id} no disponible` });
     }
-    if (producto.stock < cant) {
-      return res.status(400).json({ error: `Stock insuficiente para el producto ${item.id}` });
+    if (producto.tiene_variantes) {
+      if (!item.variante_id) {
+        return res.status(400).json({ error: `Debes seleccionar un tono para el producto ${item.id}` });
+      }
+      const variante = variantesMap[String(item.variante_id)];
+      if (!variante || String(variante.producto_id) !== String(item.id)) {
+        return res.status(400).json({ error: `Variante no válida para el producto ${item.id}` });
+      }
+      if (variante.stock < cant) {
+        return res.status(400).json({ error: `Stock insuficiente para el tono "${variante.nombre}"` });
+      }
+    } else {
+      if (producto.stock < cant) {
+        return res.status(400).json({ error: `Stock insuficiente para el producto ${item.id}` });
+      }
     }
   }
 
@@ -86,16 +115,23 @@ router.post('/', authMiddleware, wrapMulter(uploadComprobante.single('comprobant
     for (const item of parsedItems) {
       const cant = Number(item.cantidad);
       const precio_real = parseFloat(productosMap[String(item.id)].precio);
+      const variante = item.variante_id ? variantesMap[String(item.variante_id)] : null;
       await client.query(
-        'INSERT INTO detalle_pedidos (pedido_id,producto_id,cantidad,precio_unitario) VALUES ($1,$2,$3,$4)',
-        [pedido.id, item.id, cant, precio_real]
+        'INSERT INTO detalle_pedidos (pedido_id,producto_id,cantidad,precio_unitario,variante_id,variante_nombre) VALUES ($1,$2,$3,$4,$5,$6)',
+        [pedido.id, item.id, cant, precio_real, variante?.id || null, variante?.nombre || null]
       );
-      const upd = await client.query(
-        'UPDATE productos SET stock=stock-$1 WHERE id=$2 AND stock>=$1',
-        [cant, item.id]
-      );
-      if (upd.rowCount === 0) {
-        throw new Error(`Stock insuficiente para el producto ${item.id}`);
+      if (variante) {
+        const upd = await client.query(
+          'UPDATE producto_variantes SET stock=stock-$1 WHERE id=$2 AND stock>=$1',
+          [cant, variante.id]
+        );
+        if (upd.rowCount === 0) throw new Error(`Stock insuficiente para el tono "${variante.nombre}"`);
+      } else {
+        const upd = await client.query(
+          'UPDATE productos SET stock=stock-$1 WHERE id=$2 AND stock>=$1',
+          [cant, item.id]
+        );
+        if (upd.rowCount === 0) throw new Error(`Stock insuficiente para el producto ${item.id}`);
       }
     }
 
@@ -122,7 +158,7 @@ router.get('/my', authMiddleware, async (req, res) => {
   try {
     const { rows } = await pool.query(
       `SELECT p.*,
-        (SELECT json_agg(json_build_object('nombre',pr.nombre,'cantidad',dp.cantidad,'precio',dp.precio_unitario,'imagen',pr.imagen_url))
+        (SELECT json_agg(json_build_object('nombre',pr.nombre,'cantidad',dp.cantidad,'precio',dp.precio_unitario,'imagen',pr.imagen_url,'variante_nombre',dp.variante_nombre))
          FROM detalle_pedidos dp JOIN productos pr ON dp.producto_id=pr.id WHERE dp.pedido_id=p.id) as items
        FROM pedidos p WHERE p.usuario_id=$1 ORDER BY p.created_at DESC`,
       [req.user.id]
@@ -152,7 +188,7 @@ router.get('/:id/boleta', authMiddleware, async (req, res) => {
     }
 
     const itemsQ = await pool.query(
-      `SELECT dp.cantidad, dp.precio_unitario, pr.nombre
+      `SELECT dp.cantidad, dp.precio_unitario, pr.nombre, dp.variante_nombre
        FROM detalle_pedidos dp JOIN productos pr ON dp.producto_id=pr.id WHERE dp.pedido_id=$1`,
       [req.params.id]
     );

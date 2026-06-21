@@ -16,6 +16,7 @@ export default function ProductDetail() {
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(1);
+  const [varianteSeleccionada, setVarianteSeleccionada] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -26,6 +27,7 @@ export default function ProductDetail() {
       setProduct(prod.data);
       setRelated(rel.data);
       setQty(1);
+      setVarianteSeleccionada(null);
     }).finally(() => setLoading(false));
   }, [id]);
 
@@ -71,7 +73,13 @@ export default function ProductDetail() {
 
           <div className="flex items-center gap-3 mb-6">
             <span className="text-3xl font-bold text-primary-dark">S/ {parseFloat(product.precio).toFixed(2)}</span>
-            {product.stock === 0 ? (
+            {product.tiene_variantes ? (
+              varianteSeleccionada
+                ? varianteSeleccionada.stock === 0
+                  ? <span className="bg-gray-100 text-gray-500 text-sm px-3 py-1 rounded-full">Agotado</span>
+                  : <span className="bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full">En stock ({varianteSeleccionada.stock})</span>
+                : null
+            ) : product.stock === 0 ? (
               <span className="bg-gray-100 text-gray-500 text-sm px-3 py-1 rounded-full">Agotado</span>
             ) : (
               <span className="bg-green-100 text-green-700 text-sm px-3 py-1 rounded-full">En stock ({product.stock})</span>
@@ -82,8 +90,38 @@ export default function ProductDetail() {
             <p className="text-gray-600 leading-relaxed mb-6">{product.descripcion}</p>
           )}
 
+          {/* Selector de tonos/variantes */}
+          {product.tiene_variantes && product.variantes?.length > 0 && (
+            <div className="mb-6">
+              <p className="text-sm font-medium text-gray-700 mb-2">Elige un tono:</p>
+              {!varianteSeleccionada && (
+                <p className="text-xs text-amber-600 mb-2">Selecciona un tono para agregar al carrito</p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                {product.variantes.map(v => (
+                  <button
+                    key={v.id}
+                    type="button"
+                    disabled={v.stock === 0}
+                    onClick={() => { if (v.stock > 0) { setVarianteSeleccionada(v); setQty(1); } }}
+                    className={`px-4 py-2 rounded-full border-2 text-sm font-medium transition-colors
+                      ${v.stock === 0
+                        ? 'border-gray-200 text-gray-300 line-through cursor-not-allowed'
+                        : varianteSeleccionada?.id === v.id
+                          ? 'border-primary bg-primary text-white'
+                          : 'border-gray-200 text-gray-700 hover:border-primary'
+                      }`}
+                  >
+                    {v.nombre}
+                    {v.stock === 0 && ' (agotado)'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Quantity */}
-          {product.stock > 0 && (
+          {(product.tiene_variantes ? varianteSeleccionada && varianteSeleccionada.stock > 0 : product.stock > 0) && (
             <div className="flex items-center gap-4 mb-6">
               <span className="text-sm font-medium text-gray-600">Cantidad:</span>
               <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
@@ -93,7 +131,7 @@ export default function ProductDetail() {
                 >−</button>
                 <span className="px-4 py-2 font-semibold min-w-[3rem] text-center">{qty}</span>
                 <button
-                  onClick={() => setQty(q => Math.min(product.stock, q + 1))}
+                  onClick={() => setQty(q => Math.min(product.tiene_variantes ? varianteSeleccionada.stock : product.stock, q + 1))}
                   className="px-4 py-2 hover:bg-primary-light transition-colors"
                 >+</button>
               </div>
@@ -103,11 +141,11 @@ export default function ProductDetail() {
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <button
-              onClick={() => addItem(product, qty)}
-              disabled={product.stock === 0}
+              onClick={() => addItem(product, qty, varianteSeleccionada)}
+              disabled={product.tiene_variantes ? !varianteSeleccionada || varianteSeleccionada.stock === 0 : product.stock === 0}
               className="flex-1 btn-primary text-base py-3 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Agregar al carrito
+              {product.tiene_variantes && !varianteSeleccionada ? 'Elige un tono primero' : 'Agregar al carrito'}
             </button>
             <button
               onClick={() => toggle(product)}

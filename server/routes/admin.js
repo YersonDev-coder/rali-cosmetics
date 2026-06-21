@@ -66,15 +66,32 @@ router.post('/products', wrapMulter(upload.single('imagen')), async (req, res) =
   if (req.file) {
     imagen_url = await uploadToCloudinary(req.file.buffer, 'rali-productos');
   }
+  let variantes = [];
+  try { if (req.body.variantes) variantes = JSON.parse(req.body.variantes); } catch {}
+  const variantesValidas = Array.isArray(variantes) ? variantes.filter(v => v.nombre?.trim()) : [];
+  const tiene_variantes = variantesValidas.length > 0;
+
+  const client = await pool.connect();
   try {
-    const { rows } = await pool.query(
-      `INSERT INTO productos (nombre,descripcion,precio,stock,imagen_url,categoria_id,activo)
-       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
-      [nombre, descripcion, precio, stock, imagen_url, categoria_id || null, activo !== 'false']
+    await client.query('BEGIN');
+    const { rows } = await client.query(
+      `INSERT INTO productos (nombre,descripcion,precio,stock,imagen_url,categoria_id,activo,tiene_variantes)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
+      [nombre, descripcion, precio, tiene_variantes ? 0 : (stock || 0), imagen_url, categoria_id || null, activo !== 'false', tiene_variantes]
     );
+    for (const v of variantesValidas) {
+      await client.query(
+        'INSERT INTO producto_variantes (producto_id,nombre,stock) VALUES ($1,$2,$3)',
+        [rows[0].id, v.nombre.trim(), parseInt(v.stock) || 0]
+      );
+    }
+    await client.query('COMMIT');
     res.json(rows[0]);
   } catch (err) {
+    await client.query('ROLLBACK');
     res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
   }
 });
 
@@ -84,15 +101,33 @@ router.put('/products/:id', wrapMulter(upload.single('imagen')), async (req, res
   if (req.file) {
     imagen_url = await uploadToCloudinary(req.file.buffer, 'rali-productos');
   }
+  let variantes = [];
+  try { if (req.body.variantes) variantes = JSON.parse(req.body.variantes); } catch {}
+  const variantesValidas = Array.isArray(variantes) ? variantes.filter(v => v.nombre?.trim()) : [];
+  const tiene_variantes = variantesValidas.length > 0;
+
+  const client = await pool.connect();
   try {
-    const { rows } = await pool.query(
-      `UPDATE productos SET nombre=$1,descripcion=$2,precio=$3,stock=$4,imagen_url=$5,categoria_id=$6,activo=$7
-       WHERE id=$8 RETURNING *`,
-      [nombre, descripcion, precio, stock, imagen_url, categoria_id || null, activo !== 'false', req.params.id]
+    await client.query('BEGIN');
+    const { rows } = await client.query(
+      `UPDATE productos SET nombre=$1,descripcion=$2,precio=$3,stock=$4,imagen_url=$5,categoria_id=$6,activo=$7,tiene_variantes=$8
+       WHERE id=$9 RETURNING *`,
+      [nombre, descripcion, precio, tiene_variantes ? 0 : (stock || 0), imagen_url, categoria_id || null, activo !== 'false', tiene_variantes, req.params.id]
     );
+    await client.query('DELETE FROM producto_variantes WHERE producto_id=$1', [req.params.id]);
+    for (const v of variantesValidas) {
+      await client.query(
+        'INSERT INTO producto_variantes (producto_id,nombre,stock) VALUES ($1,$2,$3)',
+        [req.params.id, v.nombre.trim(), parseInt(v.stock) || 0]
+      );
+    }
+    await client.query('COMMIT');
     res.json(rows[0]);
   } catch (err) {
+    await client.query('ROLLBACK');
     res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
   }
 });
 
@@ -195,7 +230,7 @@ router.get('/orders/:id', async (req, res) => {
     );
     if (!orderQ.rows.length) return res.status(404).json({ error: 'Pedido no encontrado' });
     const itemsQ = await pool.query(
-      `SELECT dp.*, pr.nombre, pr.imagen_url FROM detalle_pedidos dp
+      `SELECT dp.*, pr.nombre, pr.imagen_url, dp.variante_nombre FROM detalle_pedidos dp
        JOIN productos pr ON dp.producto_id=pr.id WHERE dp.pedido_id=$1`,
       [req.params.id]
     );
