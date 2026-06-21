@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import PasswordInput from '../components/ui/PasswordInput';
 
 export default function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ nombre: '', email: '', password: '', telefono: '', direccion: '' });
+  const [form, setForm] = useState({ nombre: '', email: '', password: '', confirmPassword: '', telefono: '', direccion: '' });
   const [loading, setLoading] = useState(false);
 
   const pwdRules = [
@@ -17,9 +18,14 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (form.password !== form.confirmPassword) {
+      toast.error('Las contraseñas no coinciden');
+      return;
+    }
     setLoading(true);
     try {
-      const data = await register(form);
+      const { confirmPassword: _, ...payload } = form;
+      const data = await register(payload);
       toast.success(data.mensaje || '¡Cuenta creada con éxito!');
       if (data.verificacionOmitida) {
         navigate('/login');
@@ -58,13 +64,10 @@ export default function RegisterPage() {
           {field('email', 'Email', 'email', 'tu@email.com')}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña *</label>
-            <input
-              type="password"
+            <PasswordInput
               required
               value={form.password}
               onChange={e => setForm({ ...form, password: e.target.value })}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary text-sm"
-              placeholder="••••••••"
             />
             {form.password.length > 0 && (
               <ul className="mt-2 space-y-1">
@@ -75,6 +78,18 @@ export default function RegisterPage() {
                   </li>
                 ))}
               </ul>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Confirmar contraseña *</label>
+            <PasswordInput
+              required
+              value={form.confirmPassword}
+              onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
+              placeholder="••••••••"
+            />
+            {form.confirmPassword.length > 0 && form.password !== form.confirmPassword && (
+              <p className="mt-1 text-xs text-red-500">Las contraseñas no coinciden</p>
             )}
           </div>
           {field('telefono', 'Teléfono', 'tel', '+51 999 999 999', false)}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import PasswordInput from '../components/ui/PasswordInput';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -49,13 +50,10 @@ export default function LoginPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
-            <input
-              type="password"
+            <PasswordInput
               required
               value={form.password}
               onChange={e => setForm({ ...form, password: e.target.value })}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary text-sm"
-              placeholder="••••••••"
             />
           </div>
           <button type="submit" disabled={loading} className="btn-primary w-full py-3 mt-2 disabled:opacity-60">
