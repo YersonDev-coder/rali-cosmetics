@@ -9,6 +9,8 @@ const { enviarCodigoVerificacion, generarCodigo } = require('../utils/mailer');
 
 const router = express.Router();
 
+const skipEmailVerification = process.env.SKIP_EMAIL_VERIFICATION === 'true';
+
 function signToken(user) {
   return jwt.sign(
     { id: user.id, email: user.email, nombre: user.nombre, rol: user.rol },
@@ -33,6 +35,17 @@ router.post('/register', validate(registerSchema), async (req, res) => {
     const exists = await pool.query('SELECT id FROM usuarios WHERE email=$1', [email]);
     if (exists.rows.length) return res.status(409).json({ error: 'Email ya registrado' });
     const hash = await bcrypt.hash(password, 10);
+
+    if (skipEmailVerification) {
+      const { rows } = await pool.query(
+        `INSERT INTO usuarios (nombre,email,password_hash,telefono,direccion,email_verificado)
+         VALUES ($1,$2,$3,$4,$5,true) RETURNING id,nombre,email,rol`,
+        [nombre, email, hash, telefono || null, direccion || null]
+      );
+      console.log('[register] SKIP_EMAIL_VERIFICATION=true — usuario creado ya verificado (id:', rows[0].id, ')');
+      return res.json({ mensaje: 'Cuenta creada. Ya puedes iniciar sesión.', email: rows[0].email, verificacionOmitida: true });
+    }
+
     const codigo = generarCodigo();
     const expira = new Date(Date.now() + 15 * 60 * 1000);
     const { rows } = await pool.query(

@@ -14,8 +14,12 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const data = await register(form);
-      toast.success(data.mensaje || '¡Cuenta creada con éxito! Revisa tu correo.');
-      navigate('/verificar-email', { state: { email: form.email } });
+      toast.success(data.mensaje || '¡Cuenta creada con éxito!');
+      if (data.verificacionOmitida) {
+        navigate('/login');
+      } else {
+        navigate('/verificar-email', { state: { email: form.email } });
+      }
     } catch (err) {
       toast.error(err.response?.data?.error || 'Error al registrarse');
     } finally {
