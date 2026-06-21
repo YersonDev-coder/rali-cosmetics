@@ -190,7 +190,7 @@ export default function Checkout() {
                         <li><span className="font-medium text-text-dark">Domingos:</span> Cerrado</li>
                       </ul>
                     </div>
-                    <
+                    <a
                       href={`https://maps.google.com/?q=${TIENDA_MAPS_Q}`}
                       target="_blank"
                       rel="noopener noreferrer"
