@@ -8,12 +8,20 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// DIAGNÓSTICO: se ejecuta UNA SOLA VEZ al arrancar el servidor.
+// Si EMAIL_PASS cambió después del arranque, el servidor debe reiniciarse.
+console.log('[mailer] Transporter creado al iniciar el servidor.');
+console.log('[mailer] EMAIL_USER:', process.env.EMAIL_USER || '(NO DEFINIDO)');
+console.log('[mailer] EMAIL_PASS definida:', !!process.env.EMAIL_PASS);
+
 async function enviarCodigoVerificacion(email, codigo) {
-  await transporter.sendMail({
-    from: `"RALI Cosmetics" <${process.env.EMAIL_USER}>`,
-    to: email,
-    subject: 'Verifica tu correo - RALI Cosmetics',
-    html: `
+  console.log('[mailer] Intentando enviar código de verificación a:', email);
+  try {
+    const info = await transporter.sendMail({
+      from: `"RALI Cosmetics" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'Verifica tu correo - RALI Cosmetics',
+      html: `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
         <h2 style="color: #b76e79;">RALI Cosmetics</h2>
         <p>Gracias por registrarte. Usa el siguiente código para verificar tu correo:</p>
@@ -24,7 +32,23 @@ async function enviarCodigoVerificacion(email, codigo) {
         <p style="margin-top: 32px; color: #777;">— Equipo RALI Cosmetics</p>
       </div>
     `,
-  });
+    });
+    console.log('[mailer] Email de verificación enviado OK. MessageId:', info.messageId);
+  } catch (err) {
+    console.error('[mailer] ERROR al enviar email de verificación a:', email);
+    console.error('[mailer]   err.code       :', err.code);
+    console.error('[mailer]   err.message    :', err.message);
+    console.error('[mailer]   err.responseCode:', err.responseCode);
+    console.error('[mailer]   err.response   :', err.response);
+    if (err.code === 'EAUTH') {
+      console.error('[mailer]   >> AUTENTICACIÓN SMTP FALLIDA (EAUTH): las credenciales de Gmail son incorrectas o la App Password expiró/fue revocada.');
+    } else if (err.code === 'ECONNECTION' || err.code === 'ECONNREFUSED') {
+      console.error('[mailer]   >> ERROR DE CONEXIÓN SMTP: no se pudo conectar al servidor de Gmail desde Render.');
+    } else if (err.code === 'ETIMEDOUT') {
+      console.error('[mailer]   >> TIMEOUT SMTP: la conexión a Gmail tardó demasiado. El plan gratuito de Render puede bloquear el puerto 465/587.');
+    }
+    throw err;
+  }
 }
 
 function generarCodigo() {

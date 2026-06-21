@@ -3,7 +3,13 @@ const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const dbUrl = process.env.DATABASE_URL || '';
+const useSSL = dbUrl.includes('render.com') || process.env.USE_SSL === 'true';
+
+const pool = new Pool({
+  connectionString: dbUrl,
+  ...(useSSL && { ssl: { rejectUnauthorized: false } }),
+});
 
 async function seed() {
   const client = await pool.connect();

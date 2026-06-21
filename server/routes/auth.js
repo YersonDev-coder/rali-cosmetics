@@ -40,9 +40,14 @@ router.post('/register', validate(registerSchema), async (req, res) => {
        VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id,nombre,email,rol`,
       [nombre, email, hash, telefono || null, direccion || null, codigo, expira]
     );
+    console.log('[register] Usuario creado (id:', rows[0].id, '). Enviando email de verificación...');
     await enviarCodigoVerificacion(email, codigo);
     res.json({ mensaje: 'Cuenta creada. Revisa tu correo para verificar tu cuenta.', email: rows[0].email });
   } catch (err) {
+    console.error('[register] ERROR en POST /register para email:', email);
+    console.error('[register]   err.code   :', err.code);
+    console.error('[register]   err.message:', err.message);
+    console.error('[register]   stack      :', err.stack);
     res.status(500).json({ error: err.message });
   }
 });
