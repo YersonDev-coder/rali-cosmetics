@@ -6,7 +6,8 @@
     "dev": "nodemon index.js",
     "start": "node index.js",
     "seed": "node seed.js",
-    "schema": "node runSchema.js"
+    "schema": "node runSchema.js",
+    "postinstall": "npx puppeteer browsers install chrome"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
