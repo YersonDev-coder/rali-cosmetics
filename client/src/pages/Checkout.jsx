@@ -11,6 +11,10 @@ const DISTRITOS = [
   'Yarumayo', 'Pinra',
 ];
 
+const TIENDA_DIRECCION = 'Ubinas Mz. G1 Lt. 17, Amarilis 10003, Perú';
+const TIENDA_MAPS_Q = 'Ubinas+Mz.+G1+Lt.+17,+Amarilis+10003,+Peru';
+const HUANUCO_MAPS_Q = 'Hu%C3%A1nuco,+Peru';
+
 const STEPS = ['Entrega', 'Pago'];
 
 export default function Checkout() {
@@ -156,12 +160,49 @@ export default function Checkout() {
                       {DISTRITOS.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                   </div>
+                  <div className="rounded-xl overflow-hidden border border-gray-200">
+                    <p className="text-xs text-gray-500 bg-gray-50 px-3 py-1.5 border-b border-gray-200">
+                      Zona de cobertura — Huánuco
+                    </p>
+                    <iframe
+                      src={`https://www.google.com/maps?q=${HUANUCO_MAPS_Q}&output=embed`}
+                      width="100%"
+                      height="240"
+                      style={{ border: 0, display: 'block' }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title="Zona de delivery en Huánuco"
+                    />
+                  </div>
                 </div>
               ) : (
-                <div className="bg-primary-light rounded-xl p-4 text-sm text-text-dark">
-                  <p className="font-semibold mb-1">📍 Dirección de la tienda</p>
-                  <p>Jr. Huallayco 123, Huánuco, Perú</p>
-                  <p className="text-gray-500 mt-1">Horario: Lun–Sáb 9:00–19:00</p>
+                <div className="space-y-3 pt-2">
+                  <div className="bg-primary-light rounded-xl p-4 text-sm text-text-dark">
+                    <p className="font-semibold text-base mb-1">📍 Dirección de la tienda</p>
+                    <p className="mb-2">{TIENDA_DIRECCION}</p>
+                    <p className="text-gray-500 mb-3">Horario: Lun–Sáb 9:00–19:00</p>
+                    <a
+                      href={`https://maps.google.com/?q=${TIENDA_MAPS_Q}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-primary font-semibold hover:underline"
+                    >
+                      Ver en Google Maps →
+                    </a>
+                  </div>
+                  <div className="rounded-xl overflow-hidden border border-gray-200">
+                    <iframe
+                      src={`https://www.google.com/maps?q=${TIENDA_MAPS_Q}&output=embed`}
+                      width="100%"
+                      height="260"
+                      style={{ border: 0, display: 'block' }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title="Ubicación RALI Cosmetics"
+                    />
+                  </div>
                 </div>
               )}
 
