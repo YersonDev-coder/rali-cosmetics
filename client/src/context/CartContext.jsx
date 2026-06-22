@@ -38,6 +38,7 @@ export function CartProvider({ children }) {
       return [...prev, {
         ...product,
         cartKey,
+        cantidad,
         variante_id: variante?.id ?? null,
         variante_nombre: variante?.nombre ?? null,
         stock: maxStock,
