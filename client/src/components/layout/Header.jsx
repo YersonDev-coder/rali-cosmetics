@@ -127,9 +127,7 @@ export default function Header() {
 
         {/* Logo */}
         <Link to="/" className="flex-shrink-0">
-          <span className="font-playfair text-xl sm:text-2xl font-bold text-primary-dark tracking-wide">
-            RALI Cosmetics
-          </span>
+          <img src="/logo.png" alt="RALI Cosmetics" className="h-10 sm:h-12 w-auto object-contain" />
         </Link>
 
         {/* Search */}

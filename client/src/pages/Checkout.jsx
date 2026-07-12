@@ -250,9 +250,9 @@ export default function Checkout() {
               {(pago.metodo === 'yape' || pago.metodo === 'plin') && (
                 <div className="bg-primary-light rounded-xl p-5 text-center space-y-3">
                   <p className="font-semibold text-primary-dark">{pago.metodo === 'yape' ? 'Yape' : 'Plin'} al número:</p>
-                  <p className="text-2xl font-bold text-primary-dark">+51 983 573 536</p>
+                  <p className="text-2xl font-bold text-primary-dark">954 477 750</p>
                   <p className="text-lg font-bold text-primary">Monto exacto: S/ {totalFinal.toFixed(2)}</p>
-                  <div className="text-8xl">📱</div>
+                  <img src="/yape-qr.png" alt="QR para pagar con Yape" className="w-48 h-48 mx-auto object-contain rounded-xl" />
                   <div className="text-left">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Subir comprobante *</label>
                     <input
