@@ -47,14 +47,34 @@ export default function ProductCard({ product }) {
             S/ {parseFloat(product.precio).toFixed(2)}
           </span>
         </div>
-        <button
-          onClick={() => addItem(product)}
-          disabled={product.stock === 0}
-          className="w-full mt-2 flex items-center justify-center gap-2 btn-primary text-sm py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <ShoppingBagIcon className="w-4 h-4" />
-          {product.stock === 0 ? 'Agotado' : 'Agregar'}
-        </button>
+        {product.tiene_variantes ? (
+          product.stock === 0 ? (
+            <button
+              disabled
+              className="w-full mt-2 flex items-center justify-center gap-2 btn-primary text-sm py-2 opacity-50 cursor-not-allowed"
+            >
+              <ShoppingBagIcon className="w-4 h-4" />
+              Agotado
+            </button>
+          ) : (
+            <Link
+              to={`/producto/${product.id}`}
+              className="w-full mt-2 flex items-center justify-center gap-2 btn-primary text-sm py-2"
+            >
+              <ShoppingBagIcon className="w-4 h-4" />
+              Elegir tono
+            </Link>
+          )
+        ) : (
+          <button
+            onClick={() => addItem(product)}
+            disabled={product.stock === 0}
+            className="w-full mt-2 flex items-center justify-center gap-2 btn-primary text-sm py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ShoppingBagIcon className="w-4 h-4" />
+            {product.stock === 0 ? 'Agotado' : 'Agregar'}
+          </button>
+        )}
       </div>
     </div>
   );
