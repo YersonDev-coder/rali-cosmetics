@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Clock } from 'lucide-react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
@@ -27,6 +28,18 @@ export default function Checkout() {
   const [entrega, setEntrega] = useState({ tipo: 'delivery', direccion: '', referencia: '', distrito: '' });
   const [pago, setPago] = useState({ metodo: 'yape', comprobante: null });
   const [loading, setLoading] = useState(false);
+  const [showResumen, setShowResumen] = useState(false);
+
+  useEffect(() => {
+    if (!showResumen) return;
+    document.body.style.overflow = 'hidden';
+    const handleKeyDown = (e) => { if (e.key === 'Escape') setShowResumen(false); };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showResumen]);
 
   if (!user) {
     return (
@@ -282,7 +295,16 @@ export default function Checkout() {
 
         {/* Order Summary */}
         <div className="bg-white rounded-2xl shadow-sm p-5 h-fit">
-          <h3 className="font-semibold text-primary-dark mb-4">Resumen</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-primary-dark">Resumen</h3>
+            <button
+              type="button"
+              onClick={() => setShowResumen(true)}
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              Ver todos los productos
+            </button>
+          </div>
           <div className="space-y-3 mb-4">
             {items.map(item => (
               <div key={item.cartKey ?? item.id} className="flex gap-2 text-sm">
@@ -308,6 +330,58 @@ export default function Checkout() {
           </div>
         </div>
       </div>
+
+      {/* Modal: resumen completo del pedido */}
+      {showResumen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-[110] flex items-center justify-center p-4"
+          onClick={() => setShowResumen(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="resumen-modal-title"
+            className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-primary-light sticky top-0 bg-white rounded-t-2xl">
+              <h3 id="resumen-modal-title" className="font-playfair text-lg font-bold text-primary-dark">
+                Resumen del pedido
+              </h3>
+              <button onClick={() => setShowResumen(false)} className="text-gray-400 hover:text-primary-dark">
+                <XMarkIcon className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {items.map(item => (
+                <div key={item.cartKey ?? item.id} className="flex gap-3 text-sm pb-4 border-b border-gray-100 last:border-0 last:pb-0">
+                  <img src={item.imagen_url || 'https://placehold.co/64x64/FCE4EC/C2185B?text=R'} alt={item.nombre}
+                    className="w-16 h-16 object-cover rounded-lg flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-text-dark">{item.nombre}</p>
+                    {item.variante_nombre && (
+                      <p className="text-xs text-primary mt-0.5">Tono: {item.variante_nombre}</p>
+                    )}
+                    <div className="flex items-center justify-between mt-1 text-gray-500">
+                      <span>S/ {parseFloat(item.precio).toFixed(2)} x {item.cantidad}</span>
+                      <span className="font-semibold text-text-dark">S/ {(parseFloat(item.precio) * item.cantidad).toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-primary-light px-6 py-4 space-y-1.5 text-sm sticky bottom-0 bg-white rounded-b-2xl">
+              <div className="flex justify-between"><span>Subtotal</span><span>S/ {total.toFixed(2)}</span></div>
+              <div className="flex justify-between"><span>Delivery</span><span>{costo_delivery === 0 ? 'Gratis' : `S/ ${costo_delivery.toFixed(2)}`}</span></div>
+              <div className="flex justify-between font-bold text-base pt-1">
+                <span>Total</span><span className="text-primary-dark">S/ {totalFinal.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
