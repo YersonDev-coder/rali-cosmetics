@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /checkout
+Disallow: /carrito
+Disallow: /perfil
+
+Sitemap: https://rali-cosmetics.vercel.app/sitemap.xml
