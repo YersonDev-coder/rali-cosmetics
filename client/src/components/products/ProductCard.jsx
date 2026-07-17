@@ -15,7 +15,7 @@ export default function ProductCard({ product }) {
       <Link to={`/producto/${product.id}`} className="block relative overflow-hidden aspect-square">
         <img
           src={product.imagen_url || 'https://placehold.co/300x300/FCE4EC/C2185B?text=RALI'}
-          alt={product.nombre}
+          alt={`${product.nombre} - RALI Cosmetics Huánuco`}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
         {product.stock === 0 && (

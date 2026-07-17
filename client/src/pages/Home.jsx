@@ -71,13 +71,16 @@ export default function Home() {
 
       {/* Hero Slider */}
       <div className="relative h-72 sm:h-96 lg:h-[500px] overflow-hidden">
+        <h1 className="sr-only">
+          RALI Cosmetics: Tienda de Maquillaje en Huánuco con Delivery
+        </h1>
         {SLIDES.map((s, i) => (
           <div
             key={i}
             className={`absolute inset-0 bg-gradient-to-br ${s.bg} flex items-center justify-center transition-opacity duration-700 ${i === slide ? 'opacity-100' : 'opacity-0'}`}
           >
             <div className="text-center text-white px-4">
-              <h1 className="font-playfair text-3xl sm:text-5xl font-bold mb-3 drop-shadow-lg">{s.title}</h1>
+              <h2 className="font-playfair text-3xl sm:text-5xl font-bold mb-3 drop-shadow-lg">{s.title}</h2>
               <p className="text-lg sm:text-xl mb-6 text-primary-100">{s.subtitle}</p>
               <Link to={s.link} className="bg-white text-primary-dark font-bold px-8 py-3 rounded-full hover:bg-primary-50 transition-colors text-lg shadow-lg">
                 {s.cta}
@@ -167,6 +170,16 @@ export default function Home() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* Texto SEO local */}
+      <section className="max-w-4xl mx-auto px-4 pb-16 text-center">
+        <p className="text-gray-400 text-sm leading-relaxed">
+          <strong className="text-primary-dark">RALI Cosmetics</strong> es tu tienda de maquillaje
+          en Huánuco favorita: bases, labiales y productos de skincare originales, con delivery
+          rápido a domicilio. Si buscas dónde comprar maquillaje en Huánuco, escríbenos por
+          WhatsApp y revisa nuestras ofertas de maquillaje de la semana.
+        </p>
       </section>
     </div>
   );
