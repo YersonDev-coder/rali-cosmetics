@@ -178,7 +178,7 @@ export default function Home() {
           <strong className="text-primary-dark">RALI Cosmetics</strong> es tu tienda de maquillaje
           en Huánuco favorita: bases, labiales y productos de skincare originales, con delivery
           rápido a domicilio. Si buscas dónde comprar maquillaje en Huánuco, escríbenos por
-          WhatsApp y revisa nuestras ofertas de maquillaje de la semana.
+          WhatsApp y coordinamos tu pedido al instante.
         </p>
       </section>
     </div>

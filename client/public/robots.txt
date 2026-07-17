@@ -4,5 +4,9 @@ Disallow: /admin
 Disallow: /checkout
 Disallow: /carrito
 Disallow: /perfil
+Disallow: /login
+Disallow: /registro
+Disallow: /verificar-email
+Disallow: /pedido-confirmado
 
 Sitemap: https://rali-cosmetics.vercel.app/sitemap.xml

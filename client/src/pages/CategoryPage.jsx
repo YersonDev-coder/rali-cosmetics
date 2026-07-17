@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import api from '../api/axios';
 import ProductCard from '../components/products/ProductCard';
@@ -57,8 +58,15 @@ export default function CategoryPage() {
     setSearchParams(sp);
   };
 
+  const categoryName = category?.nombre || slug;
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <Helmet>
+        <title>{`${categoryName} en Huánuco | RALI Cosmetics`}</title>
+        <meta name="description" content={`Compra ${categoryName} con delivery en Huánuco. Productos originales, paga con Yape o Plin en RALI Cosmetics.`} />
+      </Helmet>
+
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
         <Link to="/" className="hover:text-primary">Inicio</Link>

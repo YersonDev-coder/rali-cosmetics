@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { ChevronRightIcon, HeartIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import api from '../api/axios';
@@ -40,9 +41,16 @@ export default function ProductDetail() {
 
   const inWishlist = isInWishlist(product.id);
   const waText = encodeURIComponent(`Hola! Me interesa el producto: ${product.nombre} (S/ ${product.precio}). ¿Está disponible?`);
+  const metaDescription = product.descripcion
+    || `Compra ${product.nombre}${product.categoria_nombre ? ` en la categoría ${product.categoria_nombre}` : ''} en RALI Cosmetics Huánuco. Delivery rápido y pago con Yape o Plin.`;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      <Helmet>
+        <title>{`${product.nombre} | RALI Cosmetics Huánuco`}</title>
+        <meta name="description" content={metaDescription} />
+      </Helmet>
+
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6 flex-wrap">
         <Link to="/" className="hover:text-primary">Inicio</Link>
@@ -63,7 +71,7 @@ export default function ProductDetail() {
         <div className="aspect-square rounded-2xl overflow-hidden bg-primary-light">
           <img
             src={product.imagen_url || 'https://placehold.co/600x600/FCE4EC/C2185B?text=RALI'}
-            alt={product.nombre}
+            alt={`${product.nombre} - RALI Cosmetics Huánuco`}
             className="w-full h-full object-cover"
           />
         </div>

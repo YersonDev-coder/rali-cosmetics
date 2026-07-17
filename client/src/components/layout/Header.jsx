@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 const CATEGORIES = [
   { name: 'Bases', slug: 'bases' },
   { name: 'Polvos', slug: 'polvos-traslucidos' },
+  { name: 'Polvo Compacto', slug: 'polvo-compacto' },
   { name: 'Rímel', slug: 'rimel' },
   { name: 'Labiales', slug: 'labiales' },
   { name: 'Delineadores', slug: 'delineadores' },
