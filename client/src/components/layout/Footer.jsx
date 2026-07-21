@@ -8,7 +8,8 @@ export default function Footer() {
           <div>
             <h3 className="font-playfair text-2xl font-bold mb-4">RALI Cosmetics</h3>
             <p className="text-primary-100 text-sm leading-relaxed">
-              Tu tienda de maquillaje y cuidado personal en Huánuco, Perú. Productos originales al mejor precio.
+              Rali Cosmetics es tu tienda de maquillaje en Huánuco: productos originales,
+              maquillaje delivery Huánuco y compra fácil por WhatsApp.
             </p>
             <div className="flex flex-wrap gap-2 mt-4">
               <a

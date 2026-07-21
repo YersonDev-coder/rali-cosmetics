@@ -176,10 +176,36 @@ export default function Home() {
       <section className="max-w-4xl mx-auto px-4 pb-16 text-center">
         <p className="text-gray-400 text-sm leading-relaxed">
           <strong className="text-primary-dark">RALI Cosmetics</strong> es tu tienda de maquillaje
-          en Huánuco favorita: bases, labiales y productos de skincare originales, con delivery
-          rápido a domicilio. Si buscas dónde comprar maquillaje en Huánuco, escríbenos por
-          WhatsApp y coordinamos tu pedido al instante.
+          Huánuco favorita: bases, labiales y productos de skincare originales, con delivery
+          rápido a domicilio. Si buscas maquillaje Huánuco o dónde comprar maquillaje en Huánuco,
+          escríbenos por WhatsApp y coordinamos tu pedido al instante.
         </p>
+        <p className="text-gray-400 text-sm leading-relaxed mt-4">
+          Tenemos una amplia variedad de <strong className="text-primary-dark">base de maquillaje</strong> para
+          todo tipo de piel, incluyendo opciones de base de maquillaje barata sin perder calidad.
+          Aprovecha nuestras ofertas de maquillaje Huánuco y haz tu pedido fácil: comprar
+          maquillaje por WhatsApp Huánuco nunca fue tan rápido, con maquillaje delivery Huánuco
+          directo a la puerta de tu casa.
+        </p>
+        <div className="flex flex-wrap justify-center gap-2 mt-6">
+          {[
+            'Maquillaje Huánuco',
+            'Tienda de maquillaje Huánuco',
+            'Base de maquillaje',
+            'Dónde comprar maquillaje en Huánuco',
+            'Maquillaje delivery Huánuco',
+            'Comprar maquillaje por WhatsApp Huánuco',
+            'Ofertas de maquillaje Huánuco',
+            'Base de maquillaje barata',
+          ].map(tag => (
+            <span
+              key={tag}
+              className="text-xs text-primary-dark bg-primary-light px-3 py-1 rounded-full"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
       </section>
     </div>
   );
