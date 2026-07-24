@@ -71,9 +71,6 @@ export default function Home() {
 
       {/* Hero Slider */}
       <div className="relative h-72 sm:h-96 lg:h-[500px] overflow-hidden">
-        <h1 className="sr-only">
-          RALI Cosmetics: Tienda de Maquillaje en Huánuco con Delivery
-        </h1>
         {SLIDES.map((s, i) => (
           <div
             key={i}

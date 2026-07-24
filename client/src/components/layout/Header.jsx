@@ -131,6 +131,12 @@ export default function Header() {
           <img src="/logo.png" alt="RALI Cosmetics" className="h-10 sm:h-12 w-auto object-contain" />
         </Link>
 
+        {isHome && (
+          <h1 className="hidden md:block text-xs font-medium text-primary-dark whitespace-nowrap flex-shrink-0">
+            RALI Cosmetics: Tienda de Maquillaje en Huánuco con Delivery
+          </h1>
+        )}
+
         {/* Search */}
         <form onSubmit={handleSearch} className="flex-1 max-w-xl mx-auto hidden sm:flex">
           <div ref={desktopSearchRef} className="relative w-full">
