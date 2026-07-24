@@ -187,25 +187,6 @@ export default function Home() {
           maquillaje por WhatsApp Huánuco nunca fue tan rápido, con maquillaje delivery Huánuco
           directo a la puerta de tu casa.
         </p>
-        <div className="flex flex-wrap justify-center gap-2 mt-6">
-          {[
-            'Maquillaje Huánuco',
-            'Tienda de maquillaje Huánuco',
-            'Base de maquillaje',
-            'Dónde comprar maquillaje en Huánuco',
-            'Maquillaje delivery Huánuco',
-            'Comprar maquillaje por WhatsApp Huánuco',
-            'Ofertas de maquillaje Huánuco',
-            'Base de maquillaje barata',
-          ].map(tag => (
-            <span
-              key={tag}
-              className="text-xs text-primary-dark bg-primary-light px-3 py-1 rounded-full"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
       </section>
     </div>
   );
