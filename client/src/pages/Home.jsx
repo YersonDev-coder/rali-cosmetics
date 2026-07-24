@@ -175,18 +175,9 @@ export default function Home() {
       {/* Texto SEO local */}
       <section className="max-w-4xl mx-auto px-4 pb-16 text-center">
         <p className="text-gray-400 text-sm leading-relaxed">
-          <strong className="text-primary-dark">RALI Cosmetics</strong> es tu tienda de maquillaje
-          Huánuco favorita: bases, labiales y productos de skincare originales, con delivery
-          rápido a domicilio. Si buscas maquillaje Huánuco o dónde comprar maquillaje en Huánuco,
-          escríbenos por WhatsApp y coordinamos tu pedido al instante.
-        </p>
-        <p className="text-gray-400 text-sm leading-relaxed mt-4">
-          Tenemos una amplia variedad de <strong className="text-primary-dark">base de maquillaje</strong> para
-          todo tipo de piel. Si buscas una <strong className="text-primary-dark">base de maquillaje</strong> de
-          calidad, tenemos opciones incluyendo base de maquillaje barata sin perder calidad.
-          Aprovecha nuestras ofertas de maquillaje Huánuco y haz tu pedido fácil: comprar
-          maquillaje por WhatsApp Huánuco nunca fue tan rápido, con maquillaje delivery Huánuco
-          directo a la puerta de tu casa.
+          Maquillaje Huánuco, tienda de maquillaje Huánuco, base de maquillaje, dónde comprar
+          maquillaje en Huánuco, maquillaje delivery Huánuco, comprar maquillaje por WhatsApp
+          Huánuco, ofertas de maquillaje Huánuco, base de maquillaje barata.
         </p>
       </section>
     </div>
