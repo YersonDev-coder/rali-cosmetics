@@ -182,7 +182,8 @@ export default function Home() {
         </p>
         <p className="text-gray-400 text-sm leading-relaxed mt-4">
           Tenemos una amplia variedad de <strong className="text-primary-dark">base de maquillaje</strong> para
-          todo tipo de piel, incluyendo opciones de base de maquillaje barata sin perder calidad.
+          todo tipo de piel. Si buscas una <strong className="text-primary-dark">base de maquillaje</strong> de
+          calidad, tenemos opciones incluyendo base de maquillaje barata sin perder calidad.
           Aprovecha nuestras ofertas de maquillaje Huánuco y haz tu pedido fácil: comprar
           maquillaje por WhatsApp Huánuco nunca fue tan rápido, con maquillaje delivery Huánuco
           directo a la puerta de tu casa.
