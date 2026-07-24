@@ -36,6 +36,19 @@ const WHY_US = [
   { icon: '🔒', title: 'Pago seguro', desc: 'Paga con Yape, Plin o contra entrega' },
 ];
 
+const LOCAL_SEO_CARDS = [
+  {
+    icon: '🛍️',
+    title: 'Encuéntranos fácil',
+    desc: 'Maquillaje Huánuco, Tienda de maquillaje Huánuco, Base de maquillaje, Dónde comprar maquillaje en Huánuco.',
+  },
+  {
+    icon: '📲',
+    title: 'Pide en segundos',
+    desc: 'Maquillaje delivery Huánuco, Comprar maquillaje por WhatsApp Huánuco, Ofertas de maquillaje Huánuco, Base de maquillaje barata.',
+  },
+];
+
 export default function Home() {
   const [slide, setSlide] = useState(0);
   const [categories, setCategories] = useState([]);
@@ -167,15 +180,15 @@ export default function Home() {
             </div>
           ))}
         </div>
-      </section>
-
-      {/* Texto SEO local */}
-      <section className="max-w-4xl mx-auto px-4 pb-16 text-center">
-        <p className="text-gray-400 text-sm leading-relaxed">
-          Maquillaje Huánuco, tienda de maquillaje Huánuco, base de maquillaje, dónde comprar
-          maquillaje en Huánuco, maquillaje delivery Huánuco, comprar maquillaje por WhatsApp
-          Huánuco, ofertas de maquillaje Huánuco, base de maquillaje barata.
-        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-3xl mx-auto mt-8">
+          {LOCAL_SEO_CARDS.map(item => (
+            <div key={item.title} className="text-center p-6 bg-white rounded-2xl shadow-sm">
+              <div className="text-5xl mb-4">{item.icon}</div>
+              <h3 className="text-lg font-bold text-primary-dark mb-2">{item.title}</h3>
+              <p className="text-gray-500 text-sm">{item.desc}</p>
+            </div>
+          ))}
+        </div>
       </section>
     </div>
   );
